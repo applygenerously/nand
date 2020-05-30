@@ -47,7 +47,6 @@ async function addLabels(path: string) {
 }
 
 async function assemble(inPath: string, outPath: string) {
-  // const writeStream = fs.createWriteStream(outPath, { flags: 'a' })
   const writeStream = fs.createWriteStream(outPath, { flags: 'w' })
   let addressNumber = VARIABLE_MEMORY_OFFSET
 
@@ -67,10 +66,6 @@ async function assemble(inPath: string, outPath: string) {
       writeStream.write(instruction + '\n')
     } 
 
-    // if A-instruction encountered where symbol is not a number, look up in symbol table
-    // if it exists, replace with numeric meaning
-    // else, it must represent a new variable. add it to symbol table
-    
     if (l.type === LineType.C_INSTRUCTION) {
       const instruction = parseCInstruction(l)
       writeStream.write(instruction + '\n')
