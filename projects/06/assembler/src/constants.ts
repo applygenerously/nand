@@ -5,8 +5,8 @@
  */
 const VARIABLE_MEMORY_OFFSET = 16
 
-const destTable = new Map<string, string>([
-  ['null', '000'],
+const destTable = new Map<string | null, string>([
+  [null, '000'],
   ['M', '001'],
   ['D', '010'],
   ['MD', '011'],
@@ -16,8 +16,8 @@ const destTable = new Map<string, string>([
   ['AMD', '111'],
 ])
 
-const jumpTable = new Map<string, string>([
-  ['null', '000'],
+const jumpTable = new Map<string | null, string>([
+  [null, '000'],
   ['JGT', '001'],
   ['JEQ', '010'],
   ['JGE', '011'],

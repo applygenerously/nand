@@ -9,7 +9,7 @@ exports.compTable = exports.jumpTable = exports.destTable = exports.VARIABLE_MEM
 var VARIABLE_MEMORY_OFFSET = 16;
 exports.VARIABLE_MEMORY_OFFSET = VARIABLE_MEMORY_OFFSET;
 var destTable = new Map([
-    ['null', '000'],
+    [null, '000'],
     ['M', '001'],
     ['D', '010'],
     ['MD', '011'],
@@ -20,7 +20,7 @@ var destTable = new Map([
 ]);
 exports.destTable = destTable;
 var jumpTable = new Map([
-    ['null', '000'],
+    [null, '000'],
     ['JGT', '001'],
     ['JEQ', '010'],
     ['JGE', '011'],

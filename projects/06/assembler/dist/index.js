@@ -60,16 +60,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 exports.__esModule = true;
 var fs_1 = __importDefault(require("fs"));
 var readline_1 = __importDefault(require("readline"));
+var constants_1 = require("./constants");
 var parser_1 = require("./parser");
 var symbolTable = __importStar(require("./symbolTable"));
 var _a = process.argv.slice(2), inPath = _a[0], outPath = _a[1];
-var readStream = fs_1["default"].createReadStream(inPath);
-// const writeStream = fs.createWriteStream(outPath, { flags: 'a' })
-console.log('symbolTable before?', symbolTable["default"]);
+function mkdirp(path) {
+    fs_1["default"].mkdirSync(path, { recursive: true });
+}
 // https://nodejs.org/api/readline.html#readline_example_read_file_stream_line_by_line
 function readLines(path, onLine) {
-    // const fileStream = fs.createReadStream(path)
     if (onLine === void 0) { onLine = function () { }; }
+    var readStream = fs_1["default"].createReadStream(inPath);
     var rl = readline_1["default"].createInterface({
         input: readStream,
         crlfDelay: Infinity
@@ -84,15 +85,10 @@ function addLabels(path) {
             switch (_a.label) {
                 case 0:
                     lineNumber = 0;
-                    // let addressNumber = VARIABLE_MEMORY_OFFSET
                     return [4 /*yield*/, readLines(path, function (line) {
-                            console.log('line??', line);
                             var l = parser_1.parseLine(line);
-                            console.log('l', l);
                             if (l.type === parser_1.LineType.LABEL) {
                                 var label = parser_1.getLabel(l);
-                                console.log('label', label);
-                                console.log('addressNumber', lineNumber);
                                 symbolTable.addSymbol(label, lineNumber);
                             }
                             if (l.type === parser_1.LineType.A_INSTRUCTION || l.type === parser_1.LineType.C_INSTRUCTION) {
@@ -100,8 +96,46 @@ function addLabels(path) {
                             }
                         })];
                 case 1:
-                    // let addressNumber = VARIABLE_MEMORY_OFFSET
                     _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function assemble(inPath, outPath) {
+    return __awaiter(this, void 0, void 0, function () {
+        var writeStream, addressNumber;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    writeStream = fs_1["default"].createWriteStream(outPath, { flags: 'a' });
+                    addressNumber = constants_1.VARIABLE_MEMORY_OFFSET;
+                    return [4 /*yield*/, readLines(inPath, function (line) {
+                            var l = parser_1.parseLine(line);
+                            if (l.type === parser_1.LineType.A_INSTRUCTION) {
+                                var symbol = parser_1.getSymbol(l);
+                                var isVariable = isNaN(parseInt(symbol));
+                                if (isVariable && !symbolTable.contains(symbol)) {
+                                    symbolTable.addSymbol(symbol, addressNumber);
+                                    addressNumber++;
+                                }
+                                var address = isVariable
+                                    ? symbolTable.getAddress(symbol)
+                                    : symbol;
+                                var instruction = parser_1.parseAInstruction(parseInt(String(address)));
+                                writeStream.write(instruction + '\n');
+                            }
+                            // if A-instruction encountered where symbol is not a number, look up in symbol table
+                            // if it exists, replace with numeric meaning
+                            // else, it must represent a new variable. add it to symbol table
+                            if (l.type === parser_1.LineType.C_INSTRUCTION) {
+                                var instruction = parser_1.parseCInstruction(l);
+                                writeStream.write(instruction + '\n');
+                            }
+                        })];
+                case 1:
+                    _a.sent();
+                    writeStream.end();
                     return [2 /*return*/];
             }
         });
@@ -114,7 +148,9 @@ function main() {
                 case 0: return [4 /*yield*/, addLabels(inPath)];
                 case 1:
                     _a.sent();
-                    console.log('symbolTable after?', symbolTable["default"]);
+                    return [4 /*yield*/, assemble(inPath, outPath)];
+                case 2:
+                    _a.sent();
                     return [2 /*return*/];
             }
         });

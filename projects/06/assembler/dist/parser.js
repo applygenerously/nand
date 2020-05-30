@@ -1,6 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.getJumpCode = exports.getCompCode = exports.getDestCode = exports.parseCInstruction = exports.getLabel = exports.getSymbol = exports.parseLine = exports.LineType = void 0;
+exports.parseAInstruction = exports.parseCInstruction = exports.getLabel = exports.getSymbol = exports.parseLine = exports.LineType = void 0;
 var constants_1 = require("./constants");
 /**
  * A_INSTRUCTION
@@ -56,7 +56,7 @@ function parseLine(line) {
 }
 exports.parseLine = parseLine;
 function getSymbol(aInstruction) {
-    var _a = regexps.c.exec(aInstruction.value) || [], match = _a[1];
+    var _a = regexps.a.exec(aInstruction.value) || [], match = _a[1];
     return match;
 }
 exports.getSymbol = getSymbol;
@@ -65,32 +65,47 @@ function getLabel(label) {
     return match;
 }
 exports.getLabel = getLabel;
-function parseCInstruction(_a) {
-    var value = _a.value;
-    if (value.includes('=') && value.includes('&')) {
-        var _b = value.split(/=|;/g), dest = _b[0], comp = _b[1], jump = _b[2];
-        return { dest: dest, comp: comp, jump: jump };
-    }
-    if (value.includes('=')) {
-        var _c = value.split(/=|;/g), dest = _c[0], comp = _c[1];
-        return { dest: dest, comp: comp };
-    }
-    if (value.includes(';')) {
-        var _d = value.split(/=|;/g), comp = _d[0], jump = _d[1];
-        return { comp: comp, jump: jump };
-    }
-}
-exports.parseCInstruction = parseCInstruction;
 function getDestCode(dest) {
     return constants_1.destTable.get(dest);
 }
-exports.getDestCode = getDestCode;
 function getCompCode(comp) {
+    if (comp === null)
+        return;
     return constants_1.compTable.get(comp);
 }
-exports.getCompCode = getCompCode;
 function getJumpCode(jump) {
     return constants_1.jumpTable.get(jump);
 }
-exports.getJumpCode = getJumpCode;
+function decimalToBinary(n) {
+    return (n >>> 0).toString(2);
+}
+function zipWith(a, b, fn) {
+    return a.map(function (a, i) { return fn(a, b[i]); });
+}
+function getCInstructionParts(_a) {
+    var value = _a.value;
+    if (value.includes('=') && value.includes('&')) {
+        var _b = value.split(/=|;/g), dest = _b[0], comp = _b[1], jump = _b[2];
+        return [dest, comp, jump];
+    }
+    if (value.includes('=')) {
+        var _c = value.split(/=|;/g), dest = _c[0], comp = _c[1];
+        return [dest, comp, null];
+    }
+    if (value.includes(';')) {
+        var _d = value.split(/=|;/g), comp = _d[0], jump = _d[1];
+        return [null, comp, jump];
+    }
+    return [null, null, null];
+}
+function parseCInstruction(instruction) {
+    var parts = getCInstructionParts(instruction);
+    var codes = zipWith(parts, [getDestCode, getCompCode, getJumpCode], function (part, fn) { return fn(part); });
+    return "111" + codes.join('');
+}
+exports.parseCInstruction = parseCInstruction;
+function parseAInstruction(address) {
+    return "0" + decimalToBinary(address).padStart(15, '0');
+}
+exports.parseAInstruction = parseAInstruction;
 //# sourceMappingURL=parser.js.map

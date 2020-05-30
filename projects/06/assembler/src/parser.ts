@@ -77,12 +77,12 @@ function parseLine(line: string): line {
   const sanitized = line.replace(/\/\/(.*)/, '').trim()
   return {
     value: sanitized,
-    type: getCommandType(sanitized)t
+    type: getCommandType(sanitized)
   }
 }
 
 function getSymbol(aInstruction: AInstruction) {
-  const [, match] = regexps.c.exec(aInstruction.value) || []
+  const [, match] = regexps.a.exec(aInstruction.value) || []
   return match
 }
 
@@ -91,33 +91,58 @@ function getLabel(label: Label) {
   return match
 }
 
-function parseCInstruction({ value }: CInstruction) {
+function getDestCode(dest: string | null) {
+  return destTable.get(dest)
+}
+
+function getCompCode(comp: string | null) {
+  if (comp === null) return
+  return compTable.get(comp)
+}
+
+function getJumpCode(jump: string | null) {
+  return jumpTable.get(jump)
+}
+
+function decimalToBinary(n: number) {
+  return (n >>> 0).toString(2)
+}
+
+function zipWith<A, B, C>(a: A[], b: B[], fn: (a: A, b: B) => C) {
+  return a.map((a: A, i: number) => fn(a, b[i]))
+}
+
+function getCInstructionParts({ value }: CInstruction) {
   if (value.includes('=') && value.includes('&')) {
     const [dest, comp, jump] = value.split(/=|;/g)
-    return { dest, comp, jump }
+    return [dest, comp, jump]
   }
 
   if (value.includes('=')) {
     const [dest, comp] = value.split(/=|;/g)
-    return { dest, comp }
+    return [dest, comp, null]
   }
 
   if (value.includes(';')) {
     const [comp, jump] = value.split(/=|;/g)
-    return { comp, jump }
+    return [null, comp, jump]
   }
+
+  return [null, null, null]
 }
 
-function getDestCode(dest: string) {
-  return destTable.get(dest)
+function parseCInstruction(instruction: CInstruction) {
+  const parts = getCInstructionParts(instruction)
+  const codes = zipWith(
+    parts,
+    [getDestCode, getCompCode, getJumpCode],
+    (part, fn) => fn(part)
+  )
+  return `111${codes.join('')}`
 }
 
-function getCompCode(comp: string) {
-  return compTable.get(comp)
-}
-
-function getJumpCode(jump: string) {
-  return jumpTable.get(jump)
+function parseAInstruction(address: number) {
+  return `0${decimalToBinary(address).padStart(15, '0')}`
 }
 
 export {
@@ -125,7 +150,5 @@ export {
   getSymbol,
   getLabel,
   parseCInstruction,
-  getDestCode,
-  getCompCode,
-  getJumpCode,
+  parseAInstruction,
 }
