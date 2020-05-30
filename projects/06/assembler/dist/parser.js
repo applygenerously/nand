@@ -84,7 +84,7 @@ function zipWith(a, b, fn) {
 }
 function getCInstructionParts(_a) {
     var value = _a.value;
-    if (value.includes('=') && value.includes('&')) {
+    if (value.includes('=') && value.includes(';')) {
         var _b = value.split(/=|;/g), dest = _b[0], comp = _b[1], jump = _b[2];
         // return [dest, comp, jump]
         return [comp, dest, jump];
@@ -104,7 +104,18 @@ function getCInstructionParts(_a) {
 function parseCInstruction(instruction) {
     var parts = getCInstructionParts(instruction);
     var codes = zipWith(parts, [getCompCode, getDestCode, getJumpCode], function (part, fn) { return fn(part); });
-    return "111" + codes.join('');
+    // return `111${codes.join('')}` 
+    var inst = "111" + codes.join('');
+    if (inst.length !== 16)
+        throw new Error('Failed to parse line: ' + '\n' + JSON.stringify({
+            jumpCode: getJumpCode(null),
+            line: instruction.value,
+            parts: parts,
+            typeofParts: parts.map(function (p) { return typeof p; }),
+            codes: codes,
+            assembled: inst
+        }, null, 2));
+    return inst;
 }
 exports.parseCInstruction = parseCInstruction;
 function parseAInstruction(address) {
