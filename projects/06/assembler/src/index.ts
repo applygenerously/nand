@@ -47,7 +47,8 @@ async function addLabels(path: string) {
 }
 
 async function assemble(inPath: string, outPath: string) {
-  const writeStream = fs.createWriteStream(outPath, { flags: 'a' })
+  // const writeStream = fs.createWriteStream(outPath, { flags: 'a' })
+  const writeStream = fs.createWriteStream(outPath, { flags: 'w' })
   let addressNumber = VARIABLE_MEMORY_OFFSET
 
   await readLines(inPath, line => {

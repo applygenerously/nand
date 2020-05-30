@@ -108,7 +108,7 @@ function assemble(inPath, outPath) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    writeStream = fs_1["default"].createWriteStream(outPath, { flags: 'a' });
+                    writeStream = fs_1["default"].createWriteStream(outPath, { flags: 'w' });
                     addressNumber = constants_1.VARIABLE_MEMORY_OFFSET;
                     return [4 /*yield*/, readLines(inPath, function (line) {
                             var l = parser_1.parseLine(line);

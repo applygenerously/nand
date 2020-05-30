@@ -115,17 +115,20 @@ function zipWith<A, B, C>(a: A[], b: B[], fn: (a: A, b: B) => C) {
 function getCInstructionParts({ value }: CInstruction) {
   if (value.includes('=') && value.includes('&')) {
     const [dest, comp, jump] = value.split(/=|;/g)
-    return [dest, comp, jump]
+    // return [dest, comp, jump]
+    return [comp, dest, jump]
   }
 
   if (value.includes('=')) {
     const [dest, comp] = value.split(/=|;/g)
-    return [dest, comp, null]
+    // return [dest, comp, null]
+    return [comp, dest, null]
   }
 
   if (value.includes(';')) {
     const [comp, jump] = value.split(/=|;/g)
-    return [null, comp, jump]
+    // return [null, comp, jump]
+    return [comp, null, jump]
   }
 
   return [null, null, null]
@@ -135,7 +138,7 @@ function parseCInstruction(instruction: CInstruction) {
   const parts = getCInstructionParts(instruction)
   const codes = zipWith(
     parts,
-    [getDestCode, getCompCode, getJumpCode],
+    [getCompCode, getDestCode, getJumpCode],
     (part, fn) => fn(part)
   )
   return `111${codes.join('')}`

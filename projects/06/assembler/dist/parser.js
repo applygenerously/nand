@@ -86,21 +86,24 @@ function getCInstructionParts(_a) {
     var value = _a.value;
     if (value.includes('=') && value.includes('&')) {
         var _b = value.split(/=|;/g), dest = _b[0], comp = _b[1], jump = _b[2];
-        return [dest, comp, jump];
+        // return [dest, comp, jump]
+        return [comp, dest, jump];
     }
     if (value.includes('=')) {
         var _c = value.split(/=|;/g), dest = _c[0], comp = _c[1];
-        return [dest, comp, null];
+        // return [dest, comp, null]
+        return [comp, dest, null];
     }
     if (value.includes(';')) {
         var _d = value.split(/=|;/g), comp = _d[0], jump = _d[1];
-        return [null, comp, jump];
+        // return [null, comp, jump]
+        return [comp, null, jump];
     }
     return [null, null, null];
 }
 function parseCInstruction(instruction) {
     var parts = getCInstructionParts(instruction);
-    var codes = zipWith(parts, [getDestCode, getCompCode, getJumpCode], function (part, fn) { return fn(part); });
+    var codes = zipWith(parts, [getCompCode, getDestCode, getJumpCode], function (part, fn) { return fn(part); });
     return "111" + codes.join('');
 }
 exports.parseCInstruction = parseCInstruction;
