@@ -1,0 +1,17 @@
+{
+  "name": "assembler",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc",
+    "watch": "tsc -w",
+    "assemble": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.5"
+  }
+}
